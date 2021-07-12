@@ -5,13 +5,11 @@ import 'package:startupsim/Controllers/UserController.dart';
 import 'package:startupsim/Models/models.dart';
 import 'package:startupsim/Views/Accounts.dart';
 import 'package:startupsim/Views/HomePage.dart';
-import 'package:startupsim/Views/MailingPage.dart';
 import 'package:startupsim/Views/TaskPage.dart';
 import 'package:startupsim/Widgets/Alert.dart';
 import 'package:startupsim/Widgets/ElevatedTextField.dart';
 import 'package:startupsim/Widgets/StadiumButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:startupsim/Widgets/StockCard.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class OperationsPage extends StatefulWidget {
@@ -1289,13 +1287,6 @@ class _OperationsPageState extends State<OperationsPage> {
             ),
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.email),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, MailingPage.id);
-              },
-            ),
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () async {

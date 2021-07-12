@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:startupsim/Controllers/DataController.dart';
 import 'package:startupsim/Controllers/UserController.dart';
 import 'package:startupsim/Models/models.dart';
 import 'package:startupsim/Views/Accounts.dart';
 import 'package:startupsim/Views/HomePage.dart';
-import 'package:startupsim/Views/MailingPage.dart';
-import 'package:startupsim/Widgets/ElevatedTextField.dart';
+import 'package:startupsim/Widgets/Alert.dart';
 import 'package:startupsim/Widgets/StadiumButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:startupsim/Widgets/StockCard.dart';
-import 'package:startupsim/Widgets/TaskCard.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+import 'package:searchable_dropdown/searchable_dropdown.dart';
 
 class FinancesPage extends StatefulWidget {
   static const String id = 'financesPage';
@@ -31,9 +28,14 @@ class _FinancesPageState extends State<FinancesPage> {
   CollectionReference company =
       FirebaseFirestore.instance.collection('/company');
   final currentUser = UserController().currentUser();
-  Map<String, dynamic> userData, companyData;
-  String accountBalance = '10000';
+  Map<String, dynamic> userData, companyData, otherData;
+  String accountBalance = '10000', dropDownValue;
   List<StockData> chartData;
+  List<StockData> otherChartData;
+  List<DropdownMenuItem> companyList;
+  double buyCount = 0, sellCount = 0, sell = 0;
+  DateTime now = DateTime.now();
+  DateTime currentDateTime;
 
   @override
   void initState() {
@@ -99,7 +101,7 @@ class _FinancesPageState extends State<FinancesPage> {
                     size: 30,
                   ),
                   Text(
-                    '\$ ${companyData['stockValues'].last}',
+                    '\$ ${companyData['stockValues'].last.toStringAsFixed(2)}',
                     style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.bold,
@@ -119,7 +121,6 @@ class _FinancesPageState extends State<FinancesPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   StockCard(
-                    onPressed: () {},
                     width: 150,
                     height: 100,
                     title: 'Investors',
@@ -127,7 +128,6 @@ class _FinancesPageState extends State<FinancesPage> {
                     subtitle: '${companyData['investors'].length}',
                   ).getWidget(),
                   StockCard(
-                    onPressed: () {},
                     width: 150,
                     height: 100,
                     title: 'Investments',
@@ -142,9 +142,180 @@ class _FinancesPageState extends State<FinancesPage> {
       } else {
         //Funding Container
         content = Container(
-          width: double.infinity,
-          height: double.infinity,
-          color: Colors.blueGrey,
+          padding: EdgeInsets.only(
+            top: 20,
+            bottom: 10,
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 300,
+                height: 70,
+                child: SearchableDropdown.single(
+                  isExpanded: true,
+                  hint: 'Search',
+                  items: companyList,
+                  onChanged: (value) {
+                    dropDownValue = value;
+                  },
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    height: 200,
+                    width: 300,
+                    child: SfCartesianChart(
+                      zoomPanBehavior: _zoomPanBehavior,
+                      trackballBehavior: _trackballBehavior,
+                      primaryXAxis: NumericAxis(),
+                      series: <ChartSeries>[
+                        AreaSeries<StockData, int>(
+                          borderColor: Colors.green,
+                          borderWidth: 3,
+                          color: Colors.green[300],
+                          dataSource: otherChartData,
+                          xValueMapper: (StockData stocks, _) => stocks.index,
+                          yValueMapper: (StockData stocks, _) => stocks.stocks,
+                          markerSettings: MarkerSettings(
+                            isVisible: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    otherData['companyName'],
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 25,
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.arrow_upward,
+                        color: Colors.green,
+                        size: 30,
+                      ),
+                      Text(
+                        '\$ ${otherData['stockValues'].last.toStringAsFixed(2)}',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      )
+                    ],
+                  ),
+                  StockCard(
+                    width: 310,
+                    height: 70,
+                    title: 'Available Stocks',
+                    icon: Icons.assessment,
+                    subtitle: '${otherData['availableStocks'].toInt()}/20000',
+                  ).getWidget(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Card(
+                        elevation: 16,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        color: Colors.white,
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 150,
+                          height: 130,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                  '\$ ${(otherData['stockValues'].last * buyCount).toInt()}'),
+                              Slider(
+                                inactiveColor: Colors.green[100],
+                                activeColor: Colors.green[400],
+                                onChanged: (value) {
+                                  setState(() {
+                                    buyCount = value;
+                                  });
+                                },
+                                max: otherData['availableStocks'].toDouble(),
+                                divisions: (otherData['availableStocks'] == 0)
+                                    ? 1
+                                    : otherData['availableStocks'].toInt(),
+                                value: buyCount,
+                                label: buyCount.toInt().toString(),
+                              ),
+                              StadiumButton(
+                                onPressed: () {
+                                  setState(() {
+                                    buyStocks();
+                                  });
+                                },
+                                color: Colors.green[400],
+                                text: 'Buy',
+                                height: 30,
+                                width: 70,
+                              ).getWidget(),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Card(
+                        elevation: 16,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        color: Colors.white,
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: 150,
+                          height: 130,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                  '\$ ${(otherData['stockValues'].last * sell).toInt()}'),
+                              Slider(
+                                inactiveColor: Colors.red[100],
+                                activeColor: Colors.red[400],
+                                onChanged: (value) {
+                                  setState(() {
+                                    sell = value;
+                                  });
+                                },
+                                max: sellCount.toDouble(),
+                                divisions:
+                                    (sellCount == 0) ? 1 : sellCount.toInt(),
+                                value: sell,
+                                label: sell.toInt().toString(),
+                              ),
+                              StadiumButton(
+                                onPressed: () {
+                                  setState(() {
+                                    sellStocks();
+                                  });
+                                },
+                                color: Colors.red[400],
+                                text: 'Sell',
+                                height: 30,
+                                width: 70,
+                              ).getWidget(),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ],
+          ),
         );
       }
     });
@@ -167,15 +338,49 @@ class _FinancesPageState extends State<FinancesPage> {
   }
 
   void fetchCompanyData() async {
+    List<DropdownMenuItem> item = [];
     await company.doc(userData['companyName']).get().then((querySnapshots) {
       setState(() {
         companyData = querySnapshots.data() as Map<String, dynamic>;
       });
     });
+    await company.get().then((data) {
+      data.docs.forEach((company) {
+        item.add(DropdownMenuItem(
+          child: Text('${company['companyName']}'),
+          value: company['companyName'],
+        ));
+      });
+    });
+    companyList = item;
     accountBalance = companyData['accountBalance'].toString();
     if (companyData != null) {
       getStocks();
+      getOtherStocks();
     }
+    fetchOtherCompanyData();
+    now = DateTime.now();
+    currentDateTime = DateTime(
+        now.year, now.month, now.day, now.hour, now.minute, now.second);
+  }
+
+  void fetchOtherCompanyData() async {
+    if (dropDownValue != null) {
+      await company.doc(dropDownValue).get().then((querySnapshots) {
+        setState(() {
+          otherData = querySnapshots.data() as Map<String, dynamic>;
+        });
+      });
+    } else {
+      otherData = companyData;
+    }
+    companyData['investments'].forEach((element) {
+      if (element['companyName'] == otherData['companyName']) {
+        sellCount = element['stocksBought'];
+      } else {
+        sellCount = 0;
+      }
+    });
   }
 
   void getStocks() {
@@ -189,6 +394,98 @@ class _FinancesPageState extends State<FinancesPage> {
         StockData(index: 6, stocks: companyData['stockValues'][5].toDouble()),
       ];
     });
+  }
+
+  void getOtherStocks() {
+    if (otherData != null) {
+      setState(() {
+        otherChartData = [
+          StockData(index: 1, stocks: otherData['stockValues'][0].toDouble()),
+          StockData(index: 2, stocks: otherData['stockValues'][1].toDouble()),
+          StockData(index: 3, stocks: otherData['stockValues'][2].toDouble()),
+          StockData(index: 4, stocks: otherData['stockValues'][3].toDouble()),
+          StockData(index: 5, stocks: otherData['stockValues'][4].toDouble()),
+          StockData(index: 6, stocks: otherData['stockValues'][5].toDouble()),
+        ];
+      });
+    }
+  }
+
+  void buyStocks() {
+    int check = 0;
+    companyData['investments'].forEach((element) {
+      if (element['companyName'] == otherData['companyName']) {
+        element['stocksBought'] = element['stocksBought'] + buyCount.toInt();
+        element['boughtAt'] = (buyCount * otherData['stockValues'].last);
+        check = 1;
+      }
+    });
+    if (check == 0) {
+      if (companyData['accountBalance'] >
+          (buyCount * otherData['stockValues'].last).toInt()) {
+        models.investors['companyName'] = otherData['companyName'];
+        models.investors['stocksBought'] = buyCount.toInt();
+        models.investors['boughtAt'] =
+            (buyCount * otherData['stockValues'].last);
+        companyData['investments'].add(models.investors);
+        otherData['investors'].add(models.investors);
+        companyData['accountBalance'] = companyData['accountBalance'] -
+            (buyCount * otherData['stockValues'].last).toInt();
+        otherData['availableStocks'] =
+            otherData['availableStocks'] - buyCount.toInt();
+        addExp(300);
+        addTransaction('expense', 'Investment',
+            (buyCount * otherData['stockValues'].last).toInt());
+        dataController.updateCompanyData(otherData, otherData['companyName']);
+        dataController.updateCompanyData(
+            companyData, companyData['companyName']);
+        buyCount = 0;
+      } else {
+        AlertMessage(
+                title: 'Error',
+                context: context,
+                message: 'Account Balance Low')
+            .getWidget();
+      }
+    }
+  }
+
+  void sellStocks() {
+    companyData['investments'].forEach((element) {
+      if (element['companyName'] == otherData['companyName']) {
+        element['stocksBought'] = element['stocksBought'] - sell;
+        companyData['accountBalance'] = companyData['accountBalance'] +
+            (sell * otherData['stockValues'].last).toInt();
+        otherData['availableStocks'] = otherData['availableStocks'] - sell;
+      }
+      if (element['stockBought'] <= 0) {
+        companyData['investments'].remove(element);
+        otherData['investors'].remove(element);
+      }
+    });
+    addExp(300);
+    addTransaction(
+        'expense', 'Returns', (sell * otherData['stockValues'].last).toInt());
+    dataController.updateCompanyData(companyData, companyData['companyName']);
+    dataController.updateCompanyData(otherData, otherData['companyName']);
+    sell = 0;
+  }
+
+  void addExp(int exp) {
+    companyData['exp'] =
+        companyData['exp'] + ((exp / (companyData['level'] * 1000)) * 100);
+    if (companyData['exp'] >= 100) {
+      companyData['exp'] = companyData['exp'] - 100;
+      companyData['level']++;
+    }
+  }
+
+  void addTransaction(String type, String purpose, int amount) {
+    models.transactions['time'] = currentDateTime;
+    models.transactions['type'] = type;
+    models.transactions['purpose'] = purpose;
+    models.transactions['amount'] = amount;
+    companyData['transactions'].add(models.transactions);
   }
 
   @override
@@ -273,13 +570,6 @@ class _FinancesPageState extends State<FinancesPage> {
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.email),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, MailingPage.id);
-              },
-            ),
-            IconButton(
               icon: Icon(Icons.home),
               onPressed: () async {
                 await Navigator.pop(context);
@@ -306,7 +596,7 @@ class _FinancesPageState extends State<FinancesPage> {
           ],
         ),
         body: SafeArea(
-          child: getContent(),
+          child: SingleChildScrollView(child: getContent()),
         ),
       ),
     );

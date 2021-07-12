@@ -8,7 +8,6 @@ import 'package:startupsim/Models/models.dart';
 import 'package:startupsim/Views/Accounts.dart';
 import 'package:startupsim/Views/CampaignsPage.dart';
 import 'package:startupsim/Views/FinancesPage.dart';
-import 'package:startupsim/Views/MailingPage.dart';
 import 'package:startupsim/Views/OperationsPage.dart';
 import 'package:startupsim/Views/SigninPage.dart';
 import 'package:startupsim/Widgets/CurvedContainer.dart';
@@ -21,14 +20,6 @@ class HomePage extends StatefulWidget {
   static const String id = 'homePage';
   @override
   _HomePageState createState() => _HomePageState();
-}
-
-class HomePageStateless extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    _HomePageState().updateStocks();
-    return Container();
-  }
 }
 
 class _HomePageState extends State<HomePage>
@@ -49,7 +40,24 @@ class _HomePageState extends State<HomePage>
   Map<String, dynamic> userData, companyData;
   String accountBalance = '10000';
   List<StockData> chartData;
-  List<Card> ongoingTasks;
+  List<Card> ongoingTasks = [
+    Card(
+      elevation: 20,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
+      color: Colors.white,
+      child: Container(
+        alignment: Alignment.center,
+        width: 250,
+        height: 100,
+        child: Text(
+          'No Ongoing Tasks',
+          style: TextStyle(fontSize: 17),
+        ),
+      ),
+    )
+  ];
   DateTime now = DateTime.now(), currentDateTime;
 
   double getRadiansFromDegree(double degree) {
@@ -121,6 +129,7 @@ class _HomePageState extends State<HomePage>
     accountBalance = companyData['accountBalance'].toString();
     if (companyData != null) {
       getStocks();
+      updateStocks();
     }
     now = DateTime.now();
     currentDateTime = DateTime(
@@ -180,7 +189,10 @@ class _HomePageState extends State<HomePage>
   }
 
   void updateStocks() {
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    DateTime date = companyData['nextStock'].toDate();
+    if (companyData['nextStock'] == null ||
+        date.isBefore(currentDateTime) ||
+        date.isAtSameMomentAs(currentDateTime)) {
       double newValue = (companyData['userBase'] * 0.001) +
           (companyData['level'] * 0.2) +
           (companyData['reputation'] * 0.07) +
@@ -191,8 +203,9 @@ class _HomePageState extends State<HomePage>
       companyData['stockValues'][3] = companyData['stockValues'][4].toDouble();
       companyData['stockValues'][4] = companyData['stockValues'][5].toDouble();
       companyData['stockValues'][5] = newValue;
+      companyData['nextStock'] = currentDateTime.add(Duration(minutes: 30));
       dataController.updateCompanyData(companyData, companyData['companyName']);
-    });
+    }
   }
 
   void checkTaskFinish() {
@@ -430,14 +443,7 @@ class _HomePageState extends State<HomePage>
           ),
           actions: [
             IconButton(
-              icon: Icon(Icons.email),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, MailingPage.id);
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.settings),
+              icon: Icon(Icons.logout),
               onPressed: () {
                 UserController().signOut();
                 Navigator.pop(context);
@@ -471,7 +477,7 @@ class _HomePageState extends State<HomePage>
                       size: 40,
                     ),
                     Text(
-                      '\$ ${companyData['stockValues'].last}',
+                      '\$ ${companyData['stockValues'].last.toStringAsFixed(2)}',
                       style: TextStyle(
                         color: getStockColor(),
                         fontWeight: FontWeight.bold,

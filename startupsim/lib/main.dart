@@ -5,7 +5,6 @@ import 'package:startupsim/Views/CampaignsPage.dart';
 import 'package:startupsim/Views/FinancesPage.dart';
 import 'package:startupsim/Views/ForgotPasswordPage.dart';
 import 'package:startupsim/Views/HomePage.dart';
-import 'package:startupsim/Views/MailingPage.dart';
 import 'package:startupsim/Views/OperationsPage.dart';
 import 'package:startupsim/Views/RegisterPage.dart';
 import 'package:startupsim/Views/SigninPage.dart';
@@ -40,7 +39,6 @@ class _StartupSimState extends State<StartupSim> {
         OperationsPage.id: (context) => OperationsPage(),
         FinancesPage.id: (context) => FinancesPage(),
         CampaignsPage.id: (context) => CampaignsPage(),
-        MailingPage.id: (context) => MailingPage(),
         TaskPage.id: (context) => TaskPage(),
       },
     );

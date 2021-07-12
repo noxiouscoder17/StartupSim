@@ -6,6 +6,7 @@ class Model {
   };
 
   Map<String, dynamic> company = {
+    'nextStock': null,
     'companyName': null,
     'reputation': 30,
     'userBase': 0,
@@ -16,9 +17,7 @@ class Model {
     'totalEmployees': 0,
     'stockValues': [0, 0, 0, 0, 0, 0],
     'totalProducts': 0,
-    'products': [
-      {'productName': 'Add Product'}
-    ],
+    'products': [],
     'availableStocks': 20000,
     'investors': [],
     'investments': [],
@@ -169,5 +168,16 @@ class Model {
     'cyberSecurityEmployees': 0,
     'databaseEmployees': 0,
     'networkEmployees': 0,
+  };
+
+  Map<String, dynamic> investors = {
+    'companyName': null,
+    'stocksBought': 0,
+    'boughtAt': 0,
+  };
+  Map<String, dynamic> investments = {
+    'companyName': null,
+    'stocksBought': 0,
+    'boughtAt': 0,
   };
 }

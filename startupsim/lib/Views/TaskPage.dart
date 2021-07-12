@@ -7,7 +7,6 @@ import 'package:startupsim/Models/models.dart';
 import 'package:startupsim/Views/Accounts.dart';
 import 'package:startupsim/Views/HomePage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:startupsim/Views/MailingPage.dart';
 import 'package:startupsim/Widgets/Alert.dart';
 import 'package:startupsim/Widgets/StadiumButton.dart';
 
@@ -1278,13 +1277,6 @@ class _TaskPageState extends State<TaskPage> {
             ),
           ),
           actions: [
-            IconButton(
-              icon: Icon(Icons.email),
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, MailingPage.id);
-              },
-            ),
             IconButton(
               icon: Icon(Icons.home),
               onPressed: () async {
