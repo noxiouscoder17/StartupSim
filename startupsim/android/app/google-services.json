@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "922015702237",
+    "project_id": "startup-sim",
+    "storage_bucket": "startup-sim.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:922015702237:android:9177adb2778ad0ed2f8f34",
+        "android_client_info": {
+          "package_name": "com.ikayi.startupsim"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "922015702237-roegfbmo8qv02qa1mgou10jiqdb0s4bi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ikayi.startupsim",
+            "certificate_hash": "f6094ce09f8e97092411debbb42672dc0836ca2f"
+          }
+        },
+        {
+          "client_id": "922015702237-npefe8lk52p3mle8alnos41knul03slr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJ0qTUNmCdSys-lTVrLiZko0qbVYcUtas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "922015702237-npefe8lk52p3mle8alnos41knul03slr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
