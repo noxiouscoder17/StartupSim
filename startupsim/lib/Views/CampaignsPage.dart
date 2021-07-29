@@ -172,8 +172,8 @@ class _CampaignsPageState extends State<CampaignsPage> {
       companyData['marketing']['reputationIncreased'] = 100;
       companyData['reputation'] = 100;
     }
-    companyData['marketing']['userBaseMultiplier'] = 2;
-    companyData['userBaseMultiplier'] = 2;
+    companyData['marketing']['userBaseMultiplier'] = campaignDuration;
+    companyData['userBaseMultiplier'] = campaignDuration;
     addExp(900);
   }
 

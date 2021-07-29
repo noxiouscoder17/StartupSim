@@ -348,6 +348,8 @@ class _TaskPageState extends State<TaskPage> {
         cyberSecurityEmployees = 0;
         databaseEmployees = 0;
         networkEmployees = 0;
+        dropdownItems = [];
+        dropdownValue = null;
         addTransaction('expense', 'Operations', estimatedCost);
         addExp(200);
       }

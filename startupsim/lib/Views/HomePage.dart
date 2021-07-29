@@ -10,6 +10,7 @@ import 'package:startupsim/Views/CampaignsPage.dart';
 import 'package:startupsim/Views/FinancesPage.dart';
 import 'package:startupsim/Views/OperationsPage.dart';
 import 'package:startupsim/Views/SigninPage.dart';
+import 'package:startupsim/Widgets/Alert.dart';
 import 'package:startupsim/Widgets/CurvedContainer.dart';
 import 'package:startupsim/Widgets/CircularButton.dart';
 import 'package:startupsim/Widgets/TaskCard.dart';
@@ -127,13 +128,13 @@ class _HomePageState extends State<HomePage>
       });
     });
     accountBalance = companyData['accountBalance'].toString();
+    now = DateTime.now();
+    currentDateTime = DateTime(
+        now.year, now.month, now.day, now.hour, now.minute, now.second);
     if (companyData != null) {
       getStocks();
       updateStocks();
     }
-    now = DateTime.now();
-    currentDateTime = DateTime(
-        now.year, now.month, now.day, now.hour, now.minute, now.second);
     if (companyData != null) {
       checkTaskFinish();
       getOngoingList();
@@ -189,10 +190,7 @@ class _HomePageState extends State<HomePage>
   }
 
   void updateStocks() {
-    DateTime date = companyData['nextStock'].toDate();
-    if (companyData['nextStock'] == null ||
-        date.isBefore(currentDateTime) ||
-        date.isAtSameMomentAs(currentDateTime)) {
+    if (companyData['nextStock'] == null) {
       double newValue = (companyData['userBase'] * 0.001) +
           (companyData['level'] * 0.2) +
           (companyData['reputation'] * 0.07) +
@@ -205,6 +203,29 @@ class _HomePageState extends State<HomePage>
       companyData['stockValues'][5] = newValue;
       companyData['nextStock'] = currentDateTime.add(Duration(minutes: 30));
       dataController.updateCompanyData(companyData, companyData['companyName']);
+    } else {
+      DateTime date = companyData['nextStock'].toDate();
+      if (date.isBefore(currentDateTime) ||
+          date.isAtSameMomentAs(currentDateTime)) {
+        double newValue = (companyData['userBase'] * 0.001) +
+            (companyData['level'] * 0.2) +
+            (companyData['reputation'] * 0.07) +
+            (companyData['products'].length * 0.9);
+        companyData['stockValues'][0] =
+            companyData['stockValues'][1].toDouble();
+        companyData['stockValues'][1] =
+            companyData['stockValues'][2].toDouble();
+        companyData['stockValues'][2] =
+            companyData['stockValues'][3].toDouble();
+        companyData['stockValues'][3] =
+            companyData['stockValues'][4].toDouble();
+        companyData['stockValues'][4] =
+            companyData['stockValues'][5].toDouble();
+        companyData['stockValues'][5] = newValue;
+        companyData['nextStock'] = currentDateTime.add(Duration(minutes: 30));
+        dataController.updateCompanyData(
+            companyData, companyData['companyName']);
+      }
     }
   }
 
@@ -442,6 +463,17 @@ class _HomePageState extends State<HomePage>
             ),
           ),
           actions: [
+            IconButton(
+              icon: Icon(Icons.info),
+              onPressed: () {
+                AlertMessage(
+                  title: 'About us',
+                  message:
+                      'This Project is made by,\n\nNavjot Kaur Matharu and Bhavishya Pawar Rajgarhia\n\nFor\nMajor Project Submission\n\nTo\nAmbedkar Institute Of Technology\n\nfor the course of\nBCA\n\nIn the year\n2021.',
+                  context: context,
+                ).getWidget();
+              },
+            ),
             IconButton(
               icon: Icon(Icons.logout),
               onPressed: () {

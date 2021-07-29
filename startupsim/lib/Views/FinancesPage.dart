@@ -255,6 +255,11 @@ class _FinancesPageState extends State<FinancesPage> {
                                 onPressed: () {
                                   setState(() {
                                     buyStocks();
+                                    dataController.updateCompanyData(
+                                        otherData, otherData['companyName']);
+                                    dataController.updateCompanyData(
+                                        companyData,
+                                        companyData['companyName']);
                                   });
                                 },
                                 color: Colors.green[400],
@@ -299,6 +304,13 @@ class _FinancesPageState extends State<FinancesPage> {
                                 onPressed: () {
                                   setState(() {
                                     sellStocks();
+                                    dataController.updateCompanyData(
+                                        otherData, otherData['companyName']);
+                                    dataController.updateCompanyData(
+                                        companyData,
+                                        companyData['companyName']);
+                                    sell = 0;
+                                    sellCount = 0;
                                   });
                                 },
                                 color: Colors.red[400],
@@ -376,7 +388,7 @@ class _FinancesPageState extends State<FinancesPage> {
     }
     companyData['investments'].forEach((element) {
       if (element['companyName'] == otherData['companyName']) {
-        sellCount = element['stocksBought'];
+        sellCount = element['stocksBought'].toDouble();
       } else {
         sellCount = 0;
       }
@@ -417,17 +429,28 @@ class _FinancesPageState extends State<FinancesPage> {
       if (element['companyName'] == otherData['companyName']) {
         element['stocksBought'] = element['stocksBought'] + buyCount.toInt();
         element['boughtAt'] = (buyCount * otherData['stockValues'].last);
+        companyData['accountBalance'] = companyData['accountBalance'] -
+            (buyCount * otherData['stockValues'].last).toInt();
+        otherData['availableStocks'] =
+            otherData['availableStocks'] - buyCount.toInt();
+        addExp(300);
+        addTransaction('expense', 'Investment',
+            (buyCount * otherData['stockValues'].last).toInt());
         check = 1;
       }
     });
     if (check == 0) {
       if (companyData['accountBalance'] >
           (buyCount * otherData['stockValues'].last).toInt()) {
-        models.investors['companyName'] = otherData['companyName'];
+        models.investments['companyName'] = otherData['companyName'];
+        models.investments['stocksBought'] = buyCount.toInt();
+        models.investments['boughtAt'] =
+            (buyCount * otherData['stockValues'].last);
+        models.investors['companyName'] = companyData['companyName'];
         models.investors['stocksBought'] = buyCount.toInt();
         models.investors['boughtAt'] =
             (buyCount * otherData['stockValues'].last);
-        companyData['investments'].add(models.investors);
+        companyData['investments'].add(models.investments);
         otherData['investors'].add(models.investors);
         companyData['accountBalance'] = companyData['accountBalance'] -
             (buyCount * otherData['stockValues'].last).toInt();
@@ -436,10 +459,6 @@ class _FinancesPageState extends State<FinancesPage> {
         addExp(300);
         addTransaction('expense', 'Investment',
             (buyCount * otherData['stockValues'].last).toInt());
-        dataController.updateCompanyData(otherData, otherData['companyName']);
-        dataController.updateCompanyData(
-            companyData, companyData['companyName']);
-        buyCount = 0;
       } else {
         AlertMessage(
                 title: 'Error',
@@ -456,19 +475,12 @@ class _FinancesPageState extends State<FinancesPage> {
         element['stocksBought'] = element['stocksBought'] - sell;
         companyData['accountBalance'] = companyData['accountBalance'] +
             (sell * otherData['stockValues'].last).toInt();
-        otherData['availableStocks'] = otherData['availableStocks'] - sell;
-      }
-      if (element['stockBought'] <= 0) {
-        companyData['investments'].remove(element);
-        otherData['investors'].remove(element);
+        otherData['availableStocks'] = otherData['availableStocks'] + sell;
+        addExp(300);
+        addTransaction('income', 'Returns',
+            (sell * otherData['stockValues'].last).toInt());
       }
     });
-    addExp(300);
-    addTransaction(
-        'expense', 'Returns', (sell * otherData['stockValues'].last).toInt());
-    dataController.updateCompanyData(companyData, companyData['companyName']);
-    dataController.updateCompanyData(otherData, otherData['companyName']);
-    sell = 0;
   }
 
   void addExp(int exp) {
